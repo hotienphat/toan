@@ -42,6 +42,12 @@
             Học Thuộc Nhanh - Toán GHK2 Đề 2
         </h1>
         <div class="flex gap-2">
+            <a href="index.html" class="bg-white text-blue-600 hover:bg-blue-50 px-3 py-1 rounded text-sm flex items-center gap-1 transition font-semibold border border-white">
+                <i data-lucide="home" class="w-4 h-4"></i> Menu
+            </a>
+            <button id="btn-restart" class="bg-yellow-400 hover:bg-yellow-500 text-yellow-900 px-3 py-1 rounded text-sm flex items-center gap-1 transition font-semibold">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Làm lại
+            </button>
             <button id="btn-shuffle" class="bg-blue-500 hover:bg-blue-700 px-3 py-1 rounded text-sm flex items-center gap-1 transition">
                 <i data-lucide="shuffle" class="w-4 h-4"></i> Trộn Đề
             </button>
@@ -355,6 +361,8 @@
                 renderMultipleChoice(q);
             } else if (q.type === "Đúng/Sai") {
                 renderTrueFalse(q);
+            } else if (q.type === "Trả lời ngắn") {
+                renderShortAnswer(q);
             } else {
                 renderEssay(q);
             }
@@ -496,6 +504,73 @@
             interactiveArea.appendChild(container);
         }
 
+        function renderShortAnswer(q) {
+            const rawAnswer = q.answer.replace(/[^0-9,\.\-]/g, '').replace(',', '.');
+            const numericAnswer = parseFloat(rawAnswer);
+
+            const container = document.createElement('div');
+            container.className = "flex flex-col items-center w-full py-4 gap-4";
+
+            const inputRow = document.createElement('div');
+            inputRow.className = "flex gap-3 items-center w-full";
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any';
+            input.placeholder = 'Nhập kết quả...';
+            input.className = "flex-1 border-2 border-blue-300 rounded-lg px-4 py-3 text-lg text-center focus:outline-none focus:border-blue-500 transition";
+
+            const btnCheck = document.createElement('button');
+            btnCheck.className = "px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition";
+            btnCheck.innerText = 'Kiểm tra';
+
+            inputRow.appendChild(input);
+            inputRow.appendChild(btnCheck);
+
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = "hidden w-full rounded-xl p-5 border text-left";
+
+            const checkAnswer = () => {
+                const userVal = parseFloat(input.value);
+                if (isNaN(userVal)) { input.classList.add('border-red-400'); return; }
+                input.classList.remove('border-red-400');
+
+                const tolerance = 0.05;
+                const isCorrect = Math.abs(userVal - numericAnswer) <= tolerance;
+
+                feedbackDiv.classList.remove('hidden', 'bg-green-50', 'border-green-200', 'bg-orange-50', 'border-orange-200');
+
+                if (isCorrect) {
+                    feedbackDiv.classList.add('bg-green-50', 'border-green-200');
+                    feedbackDiv.innerHTML = `
+                        <p class="font-bold text-green-600 mb-2">✅ Chính xác! ${q.answer}</p>
+                        <div class="text-gray-700 border-t border-green-200 pt-3"><b>Giải thích:</b><br>${q.explanation}</div>
+                    `;
+                    input.disabled = true;
+                    btnCheck.disabled = true;
+                    btnCheck.className = "px-5 py-3 bg-gray-400 text-white font-bold rounded-lg cursor-not-allowed";
+                    completeQuestion();
+                    MathJax.typesetPromise([feedbackDiv]);
+                } else {
+                    feedbackDiv.classList.add('bg-orange-50', 'border-orange-200');
+                    feedbackDiv.innerHTML = `
+                        <p class="font-bold text-orange-600 mb-2">❌ Chưa đúng! Hãy thử lại.</p>
+                        <div class="text-gray-700 border-t border-orange-200 pt-3"><b>Gợi ý giải thích:</b><br>${q.explanation}</div>
+                    `;
+                    input.value = '';
+                    input.focus();
+                    MathJax.typesetPromise([feedbackDiv]);
+                }
+            };
+
+            btnCheck.onclick = checkAnswer;
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') checkAnswer(); });
+
+            container.appendChild(inputRow);
+            container.appendChild(feedbackDiv);
+            interactiveArea.appendChild(container);
+        }
+
         function renderEssay(q) {
             const container = document.createElement('div');
             container.className = "flex flex-col items-center justify-center py-8";
@@ -522,7 +597,6 @@
             container.appendChild(answerDiv);
             interactiveArea.appendChild(container);
             
-            // Re-render icons inside new buttons
             lucide.createIcons();
         }
 
@@ -569,7 +643,15 @@
         // Event Listeners
         btnNext.addEventListener('click', nextQuestion);
         btnPrev.addEventListener('click', prevQuestion);
-        
+
+        document.getElementById('btn-restart').addEventListener('click', () => {
+            if(confirm('Bạn có muốn làm lại từ đầu không?')) {
+                currentQuestions = [...questionsDB];
+                currentIndex = 0;
+                renderQuestion();
+            }
+        });
+
         btnShuffle.addEventListener('click', () => {
             if(confirm('Bạn có muốn xáo trộn và làm lại từ đầu không?')) {
                 shuffleArray(currentQuestions);
