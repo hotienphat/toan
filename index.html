@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho Đề Thi - Hệ Thống Ôn Tập Flashcard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+
+    <header class="bg-blue-600 text-white p-6 shadow-md">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-3">
+                <i data-lucide="library" class="w-8 h-8"></i> Kho Đề Thi Toán Học
+            </h1>
+            <div class="text-blue-100 text-sm md:text-base">Hệ thống ôn tập Flashcard tương tác</div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl w-full mx-auto p-6 md:p-8 mt-4">
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Xin chào! Lựa chọn đề thi hôm nay:</h2>
+            <p class="text-gray-600">Hãy chọn một đề thi bên dưới để bắt đầu quá trình ôn tập trắc nghiệm và tự luận.</p>
+        </div>
+
+        <div id="grid-de-thi" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-12 py-6">
+        <div class="max-w-6xl mx-auto text-center text-gray-500 text-sm">
+            <p>&copy; 2026 Hệ thống Flashcard Học Thuộc Nhanh. Chúc bạn ôn thi hiệu quả!</p>
+        </div>
+    </footer>
+
+    <script>
+        // ==========================================
+        // KHU VỰC QUẢN LÝ ĐỀ THI - CHỈ CẦN SỬA Ở ĐÂY
+        // ==========================================
+        const danhSachDeThi = [
+            {
+                tenFile: "đề 1.html",
+                loai: "Học Kỳ 2",
+                soCau: 20,
+                tieuDe: "Đề 1 - Ôn Thi Toán HHK2",
+                moTa: "Bao gồm các dạng toán nguyên hàm, tích phân cơ bản, ứng dụng tích phân và hình học Oxyz.",
+                mau: "indigo",
+                icon: "calculator"
+            },
+            {
+                tenFile: "đề 2.html",
+                loai: "Giữa Kỳ 2",
+                soCau: 21,
+                tieuDe: "Đề 2 - Ôn Thi Toán GHK2",
+                moTa: "Luyện tập chuyên sâu về phương trình mặt phẳng, tính chất nguyên hàm và diện tích hình phẳng.",
+                mau: "emerald",
+                icon: "function-square"
+            },
+            {
+                tenFile: "đề tổng.html",
+                loai: "Đề Tổng Hợp",
+                soCau: 32,
+                tieuDe: "Đề Tổng Hợp GHK2",
+                moTa: "Tổng hợp toàn diện kiến thức trọng tâm giữa học kỳ 2. Thử thách bản thân với bộ đề dài.",
+                mau: "rose",
+                icon: "book-open-check"
+            }
+            // MỐN THÊM ĐỀ MỚI? Hãy thêm dấu phẩy (,) ở ngoặc nhọn trên và copy 1 khối tương tự xuống dưới.
+        ];
+
+        // ==========================================
+        // CODE TỰ ĐỘNG VẼ GIAO DIỆN (KHÔNG CẦN ĐỤNG VÀO)
+        // ==========================================
+        const container = document.getElementById('grid-de-thi');
+        
+        danhSachDeThi.forEach(de => {
+            const cardHTML = `
+                <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
+                    <div class="bg-${de.mau}-500 h-24 flex items-center justify-center">
+                        <i data-lucide="${de.icon}" class="w-12 h-12 text-white opacity-80"></i>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="px-2 py-1 bg-${de.mau}-100 text-${de.mau}-700 text-xs font-bold rounded">${de.loai}</span>
+                            <span class="text-gray-500 text-sm font-medium">${de.soCau} Câu</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">${de.tieuDe}</h3>
+                        <p class="text-gray-600 text-sm mb-6 flex-grow">${de.moTa}</p>
+                        <a href="${de.tenFile}" class="w-full text-center block py-3 bg-${de.mau}-600 hover:bg-${de.mau}-700 text-white font-semibold rounded-lg transition-colors">
+                            Bắt đầu ôn tập <i data-lucide="arrow-right" class="w-4 h-4 inline-block ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += cardHTML;
+        });
+
+        // Khởi tạo icon sau khi đã in html ra
+        lucide.createIcons();
+    </script>
+</body>
+</html>
