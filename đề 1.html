@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Ôn Thi Toán HHK2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for rendering math formulas -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            },
+            startup: {
+                typeset: false
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+            40%, 60% { transform: translate3d(3px, 0, 0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-4 shadow-md flex justify-between items-center">
+        <h1 class="text-xl font-bold flex items-center gap-2">
+            <i data-lucide="brain-circuit"></i>
+            Học Thuộc Nhanh - Toán HHK2 Đề 1
+        </h1>
+        <div class="flex gap-2">
+            <button id="btn-shuffle" class="bg-blue-500 hover:bg-blue-700 px-3 py-1 rounded text-sm flex items-center gap-1 transition">
+                <i data-lucide="shuffle" class="w-4 h-4"></i> Trộn Đề
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow p-4 md:p-8 flex flex-col items-center justify-start mt-4">
+        
+        <!-- Progress -->
+        <div class="w-full max-w-3xl mb-4 flex justify-between items-center text-sm text-gray-500 font-medium">
+            <span id="question-type" class="px-3 py-1 rounded-md font-bold">Trắc nghiệm</span>
+            <span id="progress-text">Câu 1 / 20</span>
+        </div>
+
+        <div class="w-full max-w-3xl bg-gray-200 rounded-full h-1.5 mb-6">
+            <div id="progress-bar" class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style="width: 5%"></div>
+        </div>
+
+        <!-- Flashcard Container -->
+        <div class="w-full max-w-3xl bg-white rounded-2xl shadow-lg border border-gray-100 p-6 md:p-10 transition-shadow min-h-[400px] flex flex-col relative">
+            
+            <!-- Question Title -->
+            <h2 id="question-text" class="text-xl md:text-2xl font-semibold mb-6 leading-relaxed">Đang tải câu hỏi...</h2>
+            
+            <!-- Dynamic Content Area (Options / True-False / Essay) -->
+            <div id="interactive-area" class="w-full flex-grow flex flex-col">
+                <!-- Content injected via JS -->
+            </div>
+
+        </div>
+
+        <!-- Controls -->
+        <div class="w-full max-w-3xl flex justify-between items-center mt-8 pb-8">
+            <button id="btn-prev" class="flex items-center gap-2 px-5 py-3 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 disabled:opacity-50 transition">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i> Câu trước
+            </button>
+            <div class="text-gray-400 text-sm hidden md:block text-center" id="nav-hint">
+                Hãy hoàn thành câu hỏi để đi tiếp
+            </div>
+            <button id="btn-next" disabled class="flex items-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                Câu tiếp <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        const questionsDB = [
+            // --- TRẮC NGHIỆM ---
+            {
+                type: "Trắc nghiệm",
+                question: `Cho hàm số \\(f(x)\\) liên tục trên \\([1;2]\\). Biết \\(F(x)\\) là nguyên hàm của \\(f(x)\\) trên \\([1;2]\\) thỏa mãn \\(F(1)=-2\\) và \\(F(2)=7\\). Khi đó \\(\\int_{1}^{2}f(x)dx\\) bằng?`,
+                options: ["A. 9.", "B. 5.", "C. -5.", "D. -9."],
+                answer: "A. 9.",
+                explanation: `Ta có công thức: \\(\\int_{1}^{2}f(x)dx = F(2) - F(1) = 7 - (-2) = 9\\).`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Kết quả phép tính \\(\\int_{0}^{\\frac{\\pi}{3}} 6\\sin x dx\\) bằng?`,
+                options: ["A. 3.", "B. -0,057.", "C. -3.", "D. 0,057."],
+                answer: "A. 3.",
+                explanation: `Nguyên hàm của \\(6\\sin x\\) là \\(-6\\cos x\\). Thế cận từ 0 đến \\(\\frac{\\pi}{3}\\):<br> \\(-6\\cos(\\frac{\\pi}{3}) - (-6\\cos(0)) = -6(0.5) + 6(1) = -3 + 6 = 3\\).`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Biết \\(\\int_{1}^{2}f(x)dx=3\\) và \\(\\int_{1}^{2}g(x)dx=-2\\). Khi đó \\(\\int_{1}^{2}[f(x)-g(x)]dx\\) bằng?`,
+                options: ["A. -6.", "B. -1.", "C. 1.", "D. 5."],
+                answer: "D. 5.",
+                explanation: `\\(\\int_{1}^{2}[f(x)-g(x)]dx = \\int_{1}^{2}f(x)dx - \\int_{1}^{2}g(x)dx = 3 - (-2) = 5\\).`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Trong không gian Oxyz, cho ba điểm \\(A(3;0;0)\\), \\(B(0;1;0)\\) và \\(C(0;0;2)\\). Mặt phẳng (ABC) có phương trình là:`,
+                options: ["A. \\(\\frac{x}{-3}+\\frac{y}{1}+\\frac{z}{2}=1\\)", "B. \\(\\frac{x}{3}+\\frac{y}{1}+\\frac{z}{2}=0\\)", "C. \\(\\frac{x}{3}+\\frac{y}{1}+\\frac{z}{-2}=1\\)", "D. \\(\\frac{x}{3}+\\frac{y}{1}+\\frac{z}{2}=1\\)"],
+                answer: "D. \\(\\frac{x}{3}+\\frac{y}{1}+\\frac{z}{2}=1\\)",
+                explanation: `Sử dụng phương trình mặt phẳng theo đoạn chắn: \\(\\frac{x}{a} + \\frac{y}{b} + \\frac{z}{c} = 1\\).`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Kết quả phép tính \\(\\int_{0}^{1}5^{x}dx\\) bằng?`,
+                options: ["A. \\(\\frac{-20}{\\ln 5}\\)", "B. 20.", "C. \\(\\frac{4}{\\ln 5}\\)", "D. \\(\\frac{5}{\\ln 5}\\)"],
+                answer: "C. \\(\\frac{4}{\\ln 5}\\)",
+                explanation: `Nguyên hàm của \\(5^{x}\\) là \\(\\frac{5^{x}}{\\ln 5}\\). Thế cận từ 0 đến 1: \\(\\frac{5^1}{\\ln 5} - \\frac{5^0}{\\ln 5} = \\frac{4}{\\ln 5}\\).`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Trong không gian Oxyz, cho mặt phẳng \\((P):2x-3y+5=0\\). Vectơ nào sau đây là một vectơ pháp tuyến của (P)?`,
+                options: ["A. \\(\\vec{n}=(2;-3;0)\\)", "B. \\(\\vec{n}=(2;-3;5)\\)", "C. \\(\\vec{n}=(2;3;5)\\)", "D. \\(\\vec{n}=(-2;3;5)\\)"],
+                answer: "A. \\(\\vec{n}=(2;-3;0)\\)",
+                explanation: `Hệ số của x, y, z trong pt mặt phẳng chính là tọa độ VTPT. Ở đây z không có mặt nên hệ số z = 0.`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Gọi D là hình phẳng giới hạn bởi các đường \\(y=e^{3x}\\), \\(y=0\\), \\(x=0\\) và \\(x=1\\). Thể tích của khối tròn xoay tạo thành khi quay D quanh trục Ox bằng:`,
+                options: ["A. \\(\\int_{0}^{1}e^{3x}dx\\)", "B. \\(\\pi\\int_{0}^{1}e^{3x}dx\\)", "C. \\(\\int_{0}^{1}e^{6x}dx\\)", "D. \\(\\pi\\int_{0}^{1}e^{6x}dx\\)"],
+                answer: "D. \\(\\pi\\int_{0}^{1}e^{6x}dx\\)",
+                explanation: `Công thức tính thể tích: \\(V = \\pi \\int_{a}^{b} [f(x)]^2 dx\\). Với \\(f(x) = e^{3x} \\implies [f(x)]^2 = e^{6x}\\).`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Cho hàm số \\(y=f(x)\\) liên tục trên đoạn \\([a;b]\\). Diện tích hình phẳng giới hạn bởi đồ thị hàm số \\(y=f(x)\\), trục hoành và hai đường thẳng \\(x=a, x=b\\) được tính theo công thức:`,
+                options: ["A. \\(S=\\int_{a}^{b}|f(x)|dx\\)", "B. \\(S=\\int_{a}^{b}f(x)dx\\)", "C. \\(S=\\int_{b}^{a}|f(x)|dx\\)", "D. \\(S=\\pi\\int_{a}^{b}|f(x)|dx\\)"],
+                answer: "A. \\(S=\\int_{a}^{b}|f(x)|dx\\)",
+                explanation: `Theo định nghĩa cơ bản của ứng dụng tích phân tính diện tích.`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Họ nguyên hàm \\(\\int\\frac{-5}{\\cos^{2}x}dx\\) bằng?`,
+                options: ["A. \\(5\\tan x + C\\)", "B. \\(5\\tan z\\)", "C. \\(5\\cot x + C\\)", "D. \\(-5\\tan x + C\\)"],
+                answer: "D. \\(-5\\tan x + C\\)",
+                explanation: `Vì \\(\\int \\frac{1}{\\cos^2 x} dx = \\tan x + C\\), nên nhân với hằng số -5 ta có kết quả D.`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Cho hàm số \\(f(x)\\) liên tục trên \\(\\mathbb{R}\\). Gọi S là diện tích hình phẳng giới hạn bởi \\(y=f(x), y=0, x=-1, x=2\\) (đồ thị có phần âm từ 1 đến 2). Mệnh đề nào đúng?`,
+                options: ["A. \\(S=\\int_{-1}^{1}f(x)dx+\\int_{1}^{2}f(x)dx\\)", "B. \\(S=-\\int_{-1}^{1}f(x)dx+\\int_{1}^{2}f(x)dx\\)", "C. \\(S=\\int_{-1}^{1}f(x)dx-\\int_{1}^{2}f(x)dx\\)", "D. \\(S=-\\int_{-1}^{1}f(x)dx-\\int_{1}^{2}f(x)dx\\)"],
+                answer: "C. \\(S=\\int_{-1}^{1}f(x)dx-\\int_{1}^{2}f(x)dx\\)",
+                explanation: `Từ x=-1 đến 1, f(x) nằm trên trục hoành (dương). Từ x=1 đến 2, f(x) nằm dưới (âm) nên phải mang dấu trừ.`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Họ các nguyên hàm của hàm số \\(f(x)=x^{24}\\) là?`,
+                options: ["A. \\(\\frac{1}{25}x^{25}+C\\)", "B. \\(24x^{23}+C\\)", "C. \\(24x+C\\)", "D. \\(24x^{24}+C\\)"],
+                answer: "A. \\(\\frac{1}{25}x^{25}+C\\)",
+                explanation: `Công thức: \\(\\int x^\\alpha dx = \\frac{x^{\\alpha+1}}{\\alpha+1} + C\\).`
+            },
+            {
+                type: "Trắc nghiệm",
+                question: `Diện tích hình phẳng giới hạn bởi đồ thị hàm số \\(y=x^{2}+1\\), trục hoành và hai đường thẳng \\(x=-1, x=2\\) bằng?`,
+                options: ["A. \\(S=6\\)", "B. \\(S=16\\)", "C. \\(S=\\frac{13}{6}\\)", "D. \\(S=13\\)"],
+                answer: "A. \\(S=6\\)",
+                explanation: `Hàm \\(x^2+1 > 0\\) trên \\([-1;2]\\). \\(\\int_{-1}^{2} (x^2+1)dx = (\\frac{x^3}{3} + x)|_{-1}^{2} = (\\frac{8}{3}+2) - (-\\frac{1}{3}-1) = 6\\).`
+            },
+
+            // --- ĐÚNG / SAI ---
+            {
+                type: "Đúng/Sai",
+                question: `Trong không gian Oxyz, cho 2 điểm \\(A(1;2;-1)\\), \\(B(-2;0;3)\\) và mặt phẳng \\((\\alpha):x+2y-3z-6=0\\). Mỗi khẳng định sau đúng hay sai?`,
+                propositions: [
+                    {
+                        text: `a) Phương trình mặt phẳng (P) đi qua B và song song với mặt phẳng (\\(\\alpha\\)) là \\(x+2y-3z+11=0\\).`,
+                        answer: "ĐÚNG",
+                        explanation: `Mặt phẳng song song với (\\(\\alpha\\)) có dạng \\(x+2y-3z+D=0\\). Thay tọa độ B(-2;0;3) vào ta được: \\(-2+0-9+D=0 \\implies D=11\\).`
+                    },
+                    {
+                        text: `b) Điểm A thuộc mặt phẳng (\\(\\alpha\\)).`,
+                        answer: "SAI",
+                        explanation: `Thay A(1;2;-1) vào (\\(\\alpha\\)): \\(1 + 2(2) - 3(-1) - 6 = 2 \\neq 0\\).`
+                    },
+                    {
+                        text: `c) Mặt phẳng (R) chứa điểm B sao cho khoảng cách từ A tới (R) là lớn nhất có phương trình: \\(2x+3y-4z+16=0\\).`,
+                        answer: "SAI",
+                        explanation: `Khoảng cách lớn nhất khi (R) nhận \\(\\vec{AB}=(-3;-2;4)\\) làm VTPT. Phương trình (R) là: \\(-3(x+2)-2(y-0)+4(z-3)=0 \\iff -3x-2y+4z-18=0\\).`
+                    },
+                    {
+                        text: `d) Phương trình mặt phẳng (Q) đi qua A, B và vuông góc với (\\(\\alpha\\)) là \\(2x+5y+4z-8=0\\).`,
+                        answer: "ĐÚNG",
+                        explanation: `VTPT của (Q) là \\(\\vec{n_Q} = [\\vec{AB}, \\vec{n_\\alpha}] = [(-3;-2;4), (1;2;-3)] = (-2; -5; -4)\\), hay chọn (2;5;4). Pt (Q): \\(2(x-1)+5(y-2)+4(z+1)=0 \\iff 2x+5y+4z-8=0\\).`
+                    }
+                ]
+            },
+            {
+                type: "Đúng/Sai",
+                question: `Cho hai hàm số \\(f(x)=e^{x}\\) và \\(g(x)=5-x^{2}\\). Các mệnh đề sau đúng hay sai?`,
+                propositions: [
+                    {
+                        text: `a) \\(\\int(e^{x}+5-x^{2})dx=\\int e^{x}dx+5\\int dx-\\int x^{2}dx\\).`,
+                        answer: "ĐÚNG",
+                        explanation: `Áp dụng tính chất cơ bản: nguyên hàm của một tổng/hiệu bằng tổng/hiệu các nguyên hàm.`
+                    },
+                    {
+                        text: `b) Tích phân \\(\\int_{-2}^{1}(5-x^{2})dx=15\\).`,
+                        answer: "SAI",
+                        explanation: `\\(\\int_{-2}^{1}(5-x^{2})dx = (5x - \\frac{x^3}{3})|_{-2}^{1} = (5 - \\frac{1}{3}) - (-10 + \\frac{8}{3}) = \\frac{14}{3} - (-\\frac{22}{3}) = \\frac{36}{3} = 12 \\neq 15\\).`
+                    },
+                    {
+                        text: `c) Nguyên hàm \\(F(x)\\) của hàm số \\(f(x)=e^{x}\\) thoả mãn \\(F(0)=-2\\) là \\(F(x)=e^{x}+2\\).`,
+                        answer: "SAI",
+                        explanation: `Họ nguyên hàm: \\(F(x) = e^x + C\\). Với \\(F(0) = -2 \\iff e^0 + C = -2 \\iff 1 + C = -2 \\iff C = -3\\). Vậy \\(F(x) = e^x - 3\\).`
+                    },
+                    {
+                        text: `d) Diện tích hình phẳng giới hạn bởi các đường \\(y=f(x), y=g(x)\\) và hai đường thẳng \\(x=-2, x=1\\) là \\(S=\\int_{-2}^{1}|5-x^{2}-e^{x}|dx\\).`,
+                        answer: "ĐÚNG",
+                        explanation: `Công thức tính diện tích hình phẳng giới hạn bởi 2 đồ thị: \\(S = \\int_{a}^{b} |f(x) - g(x)| dx\\).`
+                    }
+                ]
+            },
+
+            // --- TRẢ LỜI NGẮN / TỰ LUẬN ---
+            {
+                type: "Trả lời ngắn",
+                question: `Cho hàm số \\(y=f(x)\\) có đạo hàm là \\(f'(x)=12x^{2}+2, \\forall x \\in \\mathbb{R}\\). Biết \\(F(x)\\) là nguyên hàm của \\(f(x)\\) thỏa mãn \\(F(1)=7\\), khi đó \\(F(2)\\) bằng bao nhiêu?`,
+                answer: "Kết quả: 37",
+                explanation: `\\(F(x) = \\int (12x^2+2)dx = 4x^3 + 2x + C\\).<br>\\(F(1) = 4+2+C = 7 \\implies C=1\\).<br>\\(F(x) = 4x^3+2x+1 \\implies F(2) = 4(8)+4+1 = 37\\).`
+            },
+            {
+                type: "Trả lời ngắn",
+                question: `Trong không gian Oxyz, cho hai mặt phẳng \\((P):x+2y+2z-3=0\\) và \\((Q):x+2y+2z+5=0\\). Tính khoảng cách giữa hai mặt phẳng đó (làm tròn đến hàng phần mười).`,
+                answer: "Kết quả: 2,6",
+                explanation: `Vì (P) // (Q). Áp dụng công thức: \\(d((P),(Q)) = \\frac{|D_2 - D_1|}{\\sqrt{A^2+B^2+C^2}} = \\frac{|5 - (-3)|}{\\sqrt{1^2+2^2+2^2}} = \\frac{8}{3} \\approx 2,666... \\approx 2,7\\). (Theo đáp án gốc của trường là 2,6 - hãy chú ý kiểm tra lại).`
+            },
+            {
+                type: "Trả lời ngắn",
+                question: `Một ô tô bắt đầu chuyển động nhanh dần đều với vận tốc \\(v_1(t)=5t\\) (m/s). Đi được 5 giây, phanh gấp với gia tốc \\(a=-20\\) (m/s²). Tính tổng quãng đường từ lúc lăn bánh đến khi dừng hẳn? (Làm tròn hàng đơn vị)`,
+                answer: "Kết quả: 78 (m)",
+                explanation: `S1 (5s đầu) = \\(\\int_{0}^{5} 5t dt = 62.5\\) m.<br>Vận tốc lúc phanh là \\(v(5) = 25\\) m/s. PTTĐ lúc phanh: \\(v_2(t) = -20t + 25\\). Dừng lại khi \\(t = 1.25\\)s.<br>S2 = \\(\\int_{0}^{1.25} (-20t+25) dt = 15.625\\) m.<br>Tổng: 62.5 + 15.625 = 78.125 \\(\\approx 78\\).`
+            },
+            {
+                type: "Trả lời ngắn",
+                question: `Gạch lát nền hình vuông cạnh 4dm. Phần màu đậm ở giữa được tạo bởi 4 đường cong \\(xy=2\\) hoặc \\(xy=-2\\) đối xứng. Diện tích phần màu đậm bằng bao nhiêu?`,
+                answer: "Kết quả: 13,5 (dm²)",
+                explanation: `Phần trắng (4 góc) được tính bằng tích phân đường cong \\(y = 2/x\\). Tổng diện tích phần trắng xấp xỉ 2.45. Diện tích đậm = \\(16 - 2.45 = 13.55 \\approx 13.5\\).`
+            },
+            {
+                type: "Tự luận",
+                question: `Vật thể tròn xoay tạo thành khi quay \\(y=x^{2}+6, y=0\\) quanh Ox. Bán kính hai đáy là 6 dm và 10 dm. Thể tích vật thể là? (Làm tròn hàng đơn vị)`,
+                answer: "Kết quả: 347 (dm³)",
+                explanation: `Bán kính 6 \\(\\implies x^2+6=6 \\implies x=0\\).<br>Bán kính 10 \\(\\implies x^2+6=10 \\implies x=2\\).<br>\\(V = \\pi \\int_{0}^{2} (x^2+6)^2 dx = \\pi (\\frac{x^5}{5} + 4x^3 + 36x)|_0^2 = \\frac{552\\pi}{5} \\approx 346.8 \\approx 347\\).`
+            },
+            {
+                type: "Tự luận",
+                question: `Chất điểm A xuất phát từ O, \\(v(t)=\\frac{1}{100}t^{2}+\\frac{13}{30}t\\) (m/s). Chất điểm B chậm hơn 5s, có gia tốc a. Sau khi B xuất phát 15s thì đuổi kịp A. Vận tốc của B lúc đó là?`,
+                answer: "Kết quả: 15,1 (m/s)",
+                explanation: `Thời gian A đi là 20s, B đi là 15s. S(A) = \\(\\int_0^{20} v(t)dt = \\frac{340}{3}\\). S(B) = \\(\\frac{1}{2}a(15)^2\\).<br>Cho S(A)=S(B) tìm được \\(a = \\frac{136}{135}\\).<br>Vận tốc B lúc 15s: \\(v_B = a \\cdot 15 = \\frac{136}{9} \\approx 15.1\\) m/s.`
+            },
+            {
+                type: "Tự luận",
+                question: `Sân chơi hình vuông ABCD có đường chéo AC=120m. Phần trồng hoa ở 4 góc là parabol đỉnh cách góc 40m. Diện tích sân chơi?`,
+                answer: "Kết quả: 3467 (m²)",
+                explanation: `Sử dụng hệ tọa độ gắn vào hình vuông, phương trình parabol dạng \\(y=ax^2+c\\). Dùng tích phân tính diện tích 4 góc rồi lấy diện tích hình vuông trừ đi.`
+            }
+        ];
+
+        let currentQuestions = [...questionsDB];
+        let currentIndex = 0;
+        let isQuestionCompleted = false;
+
+        // DOM Elements
+        const questionType = document.getElementById('question-type');
+        const questionText = document.getElementById('question-text');
+        const interactiveArea = document.getElementById('interactive-area');
+        const progressText = document.getElementById('progress-text');
+        const progressBar = document.getElementById('progress-bar');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnShuffle = document.getElementById('btn-shuffle');
+        const navHint = document.getElementById('nav-hint');
+
+        // Initialize lucide icons
+        lucide.createIcons();
+
+        function renderQuestion() {
+            const q = currentQuestions[currentIndex];
+            isQuestionCompleted = false;
+            
+            // Populate Header
+            questionType.innerText = q.type;
+            if(q.type === "Trắc nghiệm") {
+                questionType.className = "px-3 py-1 bg-blue-100 text-blue-700 rounded-md font-bold";
+            } else if(q.type === "Đúng/Sai") {
+                questionType.className = "px-3 py-1 bg-purple-100 text-purple-700 rounded-md font-bold";
+            } else {
+                questionType.className = "px-3 py-1 bg-orange-100 text-orange-700 rounded-md font-bold";
+            }
+
+            questionText.innerHTML = q.question;
+            interactiveArea.innerHTML = ''; // Clear previous content
+
+            // Build Interactive Area based on type
+            if (q.type === "Trắc nghiệm") {
+                renderMultipleChoice(q);
+            } else if (q.type === "Đúng/Sai") {
+                renderTrueFalse(q);
+            } else {
+                renderEssay(q);
+            }
+
+            // Update Progress & Buttons
+            progressText.innerText = `Câu ${currentIndex + 1} / ${currentQuestions.length}`;
+            progressBar.style.width = `${((currentIndex + 1) / currentQuestions.length) * 100}%`;
+            updateButtons();
+
+            // Render MathJax
+            MathJax.typesetPromise([document.getElementById('question-text'), interactiveArea]);
+        }
+
+        function renderMultipleChoice(q) {
+            const grid = document.createElement('div');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 gap-4 text-lg";
+            
+            const explanationDiv = document.createElement('div');
+            explanationDiv.className = "hidden mt-6 bg-green-50 p-6 rounded-xl border border-green-200";
+            
+            let answeredCorrectly = false;
+
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "text-left p-4 bg-gray-50 border-2 border-gray-200 rounded-lg hover:bg-gray-100 transition duration-200";
+                btn.innerHTML = opt;
+                
+                btn.onclick = () => {
+                    if (answeredCorrectly) return; // Stop if already answered correctly
+
+                    if (opt === q.answer) {
+                        // Correct
+                        answeredCorrectly = true;
+                        btn.className = "text-left p-4 bg-green-100 border-2 border-green-500 text-green-800 rounded-lg font-medium";
+                        
+                        // Disable other buttons gracefully
+                        Array.from(grid.children).forEach(child => {
+                            if (child !== btn) {
+                                child.classList.add('opacity-50', 'cursor-not-allowed');
+                            }
+                        });
+
+                        // Show explanation
+                        explanationDiv.classList.remove('hidden');
+                        explanationDiv.innerHTML = `
+                            <p class="text-sm text-green-600 mb-2 uppercase tracking-wider font-bold">Chính xác!</p>
+                            <div class="text-gray-700 mt-2">${q.explanation || 'Không có giải thích thêm.'}</div>
+                        `;
+                        
+                        completeQuestion();
+                        MathJax.typesetPromise([explanationDiv]);
+                    } else {
+                        // Incorrect
+                        btn.className = "text-left p-4 bg-red-50 border-2 border-red-400 text-red-700 rounded-lg shake";
+                        setTimeout(() => btn.classList.remove('shake'), 400); // Remove animation class to allow re-trigger
+                    }
+                };
+                grid.appendChild(btn);
+            });
+
+            interactiveArea.appendChild(grid);
+            interactiveArea.appendChild(explanationDiv);
+        }
+
+        function renderTrueFalse(q) {
+            const container = document.createElement('div');
+            container.className = "space-y-4";
+            
+            let correctCount = 0;
+
+            q.propositions.forEach((prop, idx) => {
+                const row = document.createElement('div');
+                row.className = "p-4 bg-gray-50 border border-gray-200 rounded-lg flex flex-col md:flex-row gap-4 items-start md:items-center justify-between";
+                
+                const textDiv = document.createElement('div');
+                textDiv.className = "text-gray-800 flex-1";
+                textDiv.innerHTML = prop.text;
+
+                const btnContainer = document.createElement('div');
+                btnContainer.className = "flex gap-2 w-full md:w-auto shrink-0";
+
+                const btnTrue = document.createElement('button');
+                btnTrue.className = "flex-1 md:flex-none px-6 py-2 bg-white border-2 border-gray-300 rounded-md hover:bg-gray-100 font-bold text-gray-700 transition";
+                btnTrue.innerText = "ĐÚNG";
+
+                const btnFalse = document.createElement('button');
+                btnFalse.className = "flex-1 md:flex-none px-6 py-2 bg-white border-2 border-gray-300 rounded-md hover:bg-gray-100 font-bold text-gray-700 transition";
+                btnFalse.innerText = "SAI";
+
+                const explanationDiv = document.createElement('div');
+                explanationDiv.className = "hidden mt-3 w-full text-sm text-gray-600 bg-green-50 p-3 rounded border border-green-100";
+
+                let isResolved = false;
+
+                const handleChoice = (choice, clickedBtn, otherBtn) => {
+                    if (isResolved) return;
+
+                    if (choice === prop.answer) {
+                        // Correct
+                        isResolved = true;
+                        clickedBtn.className = "flex-1 md:flex-none px-6 py-2 bg-green-500 border-2 border-green-500 rounded-md font-bold text-white";
+                        otherBtn.className = "flex-1 md:flex-none px-6 py-2 bg-gray-100 border-2 border-gray-200 rounded-md font-bold text-gray-400 cursor-not-allowed opacity-50";
+                        
+                        row.classList.add('border-green-300', 'bg-white');
+                        
+                        explanationDiv.classList.remove('hidden');
+                        explanationDiv.innerHTML = `<b>Giải thích:</b> ${prop.explanation}`;
+                        
+                        // Move explanation right below the proposition row
+                        row.insertAdjacentElement('afterend', explanationDiv);
+                        MathJax.typesetPromise([explanationDiv]);
+
+                        correctCount++;
+                        if (correctCount === q.propositions.length) {
+                            completeQuestion();
+                        }
+                    } else {
+                        // Incorrect
+                        clickedBtn.classList.add('bg-red-100', 'border-red-400', 'text-red-700', 'shake');
+                        setTimeout(() => clickedBtn.classList.remove('shake'), 400);
+                    }
+                };
+
+                btnTrue.onclick = () => handleChoice("ĐÚNG", btnTrue, btnFalse);
+                btnFalse.onclick = () => handleChoice("SAI", btnFalse, btnTrue);
+
+                btnContainer.appendChild(btnTrue);
+                btnContainer.appendChild(btnFalse);
+                
+                row.appendChild(textDiv);
+                row.appendChild(btnContainer);
+                
+                container.appendChild(row);
+            });
+
+            interactiveArea.appendChild(container);
+        }
+
+        function renderEssay(q) {
+            const container = document.createElement('div');
+            container.className = "flex flex-col items-center justify-center py-8";
+
+            const btnReveal = document.createElement('button');
+            btnReveal.className = "px-6 py-3 bg-blue-100 text-blue-700 font-bold rounded-lg hover:bg-blue-200 transition border border-blue-300 flex items-center gap-2";
+            btnReveal.innerHTML = `<i data-lucide="eye" class="w-5 h-5"></i> Bấm để xem đáp án`;
+
+            const answerDiv = document.createElement('div');
+            answerDiv.className = "hidden w-full mt-6 bg-gray-50 p-6 rounded-xl border border-gray-200 text-left";
+
+            btnReveal.onclick = () => {
+                btnReveal.classList.add('hidden');
+                answerDiv.classList.remove('hidden');
+                answerDiv.innerHTML = `
+                    <div class="text-2xl font-bold text-green-600 mb-4">${q.answer}</div>
+                    <div class="text-gray-700 border-t pt-4"><b>Giải thích chi tiết:</b><br>${q.explanation}</div>
+                `;
+                completeQuestion();
+                MathJax.typesetPromise([answerDiv]);
+            };
+
+            container.appendChild(btnReveal);
+            container.appendChild(answerDiv);
+            interactiveArea.appendChild(container);
+            
+            // Re-render icons inside new buttons
+            lucide.createIcons();
+        }
+
+        function completeQuestion() {
+            isQuestionCompleted = true;
+            updateButtons();
+        }
+
+        function nextQuestion() {
+            if (isQuestionCompleted && currentIndex < currentQuestions.length - 1) {
+                currentIndex++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderQuestion();
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function updateButtons() {
+            btnPrev.disabled = currentIndex === 0;
+            
+            if (isQuestionCompleted) {
+                btnNext.disabled = currentIndex === currentQuestions.length - 1;
+                navHint.innerText = currentIndex === currentQuestions.length - 1 ? "Đã đến câu cuối cùng" : "Bạn có thể chuyển sang câu tiếp theo";
+                navHint.className = "text-green-600 font-medium text-sm hidden md:block text-center";
+            } else {
+                btnNext.disabled = true;
+                navHint.innerText = "Hãy hoàn thành câu hỏi để đi tiếp";
+                navHint.className = "text-gray-400 text-sm hidden md:block text-center";
+            }
+        }
+
+        // Event Listeners
+        btnNext.addEventListener('click', nextQuestion);
+        btnPrev.addEventListener('click', prevQuestion);
+        
+        btnShuffle.addEventListener('click', () => {
+            if(confirm('Bạn có muốn xáo trộn và làm lại từ đầu không?')) {
+                shuffleArray(currentQuestions);
+                currentIndex = 0;
+                renderQuestion();
+            }
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowRight' || e.code === 'Space') {
+                if(e.code === 'Space') e.preventDefault();
+                if(isQuestionCompleted) nextQuestion();
+            } else if (e.code === 'ArrowLeft') {
+                prevQuestion();
+            }
+        });
+
+        // Init MathJax then render first question
+        window.addEventListener('load', () => {
+            MathJax.startup.defaultReady();
+            renderQuestion();
+        });
+
+    </script>
+</body>
+</html>
