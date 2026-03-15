@@ -1,0 +1,594 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, RotateCcw, Shuffle, Layers, CheckCircle, XCircle, MousePointer } from 'lucide-react';
+
+const flashcardsData = [
+  // ================= PHẦN I: TRẮC NGHIỆM =================
+  { id: 1, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 1. Loại bằng chứng tiến hoá nào sau đây được coi là bằng chứng trực tiếp?', 
+    options: ['A. Bằng chứng giải phẫu so sánh.', 'B. Bằng chứng sinh học phân tử.', 'C. Bằng chứng tế bào học.', 'D. Bằng chứng hoá thạch.'], 
+    correct: 3, back: 'Bằng chứng hoá thạch là bằng chứng trực tiếp duy nhất.' },
+  { id: 2, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 2. Bằng chứng tiến hoá KHÔNG chứng minh các sinh vật có nguồn gốc chung là', 
+    options: ['A. Cơ quan thoái hoá.', 'B. Sự phát triển phôi giống nhau.', 'C. Cơ quan tương đồng.', 'D. Cơ quan tương tự.'], 
+    correct: 3, back: 'Cơ quan tương tự (tiến hóa đồng quy) phản ánh sự thích nghi với môi trường giống nhau, không phản ánh nguồn gốc chung.' },
+  { id: 3, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 3. Người và tinh tinh khác nhau, nhưng thành phần axit amin ở chuỗi β Hb như nhau chứng tỏ cùng nguồn gốc thì gọi là', 
+    options: ['A. Bằng chứng giải phẫu so sánh.', 'B. Bằng chứng phôi sinh học.', 'C. Bằng chứng địa lí sinh học.', 'D. Bằng chứng sinh học phân tử.'], 
+    correct: 3, back: 'Bằng chứng sinh học phân tử (so sánh DNA, protein, axit amin).' },
+  { id: 4, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 4. Dấu vết của lá dương xỉ trên than đá được phát hiện có từ đại cổ sinh thuộc bằng chứng tiến hóa nào sau đây?', 
+    options: ['A. Tế bào học.', 'B. Hóa Thạch.', 'C. Cơ quan thoái hóa.', 'D. Sinh học phân tử.'], 
+    correct: 1, back: 'Hóa thạch là di tích của sinh vật để lại trong các lớp đất đá.' },
+  { id: 5, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 5. Cặp cơ quan nào sau đây là cơ quan tương đồng?', 
+    options: ['A. Ruột thừa của người và dạ cỏ của trâu bò.', 'B. Tay người và cánh chim.', 'C. Tay người và chân trước của cào cào.', 'D. Gai xương rồng và gai hoa hồng.'], 
+    correct: 1, back: 'Tay người và cánh chim là cơ quan tương đồng (cùng nguồn gốc cấu trúc chi trước của động vật có xương sống).' },
+  { id: 6, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 6. Bằng chứng nào dưới đây được coi là bằng chứng tế bào học chứng minh tính thống nhất của sinh giới?', 
+    options: ['A. Mã di truyền là mã bộ ba.', 'B. Tất cả các cơ thể sinh vật đều cấu tạo từ tế bào.', 'C. DNA của các loài đều từ 4 loại nu.', 'D. Trình tự amino acid giống nhau.'], 
+    correct: 1, back: 'Học thuyết tế bào: Mọi sinh vật đều được cấu tạo từ tế bào.' },
+  { id: 7, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 7. Theo Darwin, đối tượng của chọn lọc tự nhiên là', 
+    options: ['A. Quần thể.', 'B. Allele.', 'C. Loài.', 'D. Cá thể.'], 
+    correct: 3, back: 'Theo Darwin, chọn lọc tự nhiên tác động trực tiếp lên CÁ THỂ.' },
+  { id: 8, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 8. Phương pháp Darwin xây dựng học thuyết về chọn lọc tự nhiên và hình thành loài theo các bước nào?', 
+    options: ['A. Quan sát thu thập dữ liệu → hình thành giả thuyết → kiểm chứng giả thuyết.', 'B. Quan sát → kiểm chứng → hình thành học thuyết.', 'C. Hình thành giả thuyết → kiểm chứng → quan sát.', 'D. Hình thành học thuyết → quan sát → kiểm chứng.'], 
+    correct: 0, back: 'Darwin áp dụng phương pháp nghiên cứu khoa học chuẩn: Quan sát -> Giả thuyết -> Kiểm chứng.' },
+  { id: 9, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 9. Theo Darwin, sự đa dạng của các giống vật nuôi và cây trồng là kết quả của quá trình', 
+    options: ['A. Chọn lọc nhân tạo.', 'B. Chọn lọc tự nhiên.', 'C. Phát sinh biến dị cá thể.', 'D. Chăm sóc của con người.'], 
+    correct: 0, back: 'Chọn lọc nhân tạo tạo ra các giống vật nuôi cây trồng đa dạng phục vụ nhu cầu con người.' },
+  { id: 10, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 10. Theo quan điểm thuyết tiến hóa hiện đại, đơn vị tiến hóa cấp cơ sở là', 
+    options: ['A. Cá thể.', 'B. Quần thể.', 'C. Quần xã.', 'D. Hệ sinh thái.'], 
+    correct: 1, back: 'Quần thể là đơn vị tiến hóa cấp cơ sở (khác với Darwin coi cá thể là đơn vị tác động của CLTN).' },
+  { id: 11, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 11. Các giai đoạn chính trong quá trình phát sinh sự sống trên Quả đất lần lượt là?', 
+    options: ['A. Tiến hóa tiền sinh học – hóa học – sinh học.', 'B. Tiến hóa hóa học – tiền sinh học – sinh học.', 'C. Tiến hóa hóa học – sinh học – tiền sinh học.', 'D. Tiến hóa sinh học – tiền sinh học – hóa học.'], 
+    correct: 1, back: 'Trình tự: Hóa học (chất vô cơ -> hữu cơ) -> Tiền sinh học (đại phân tử -> tế bào sơ khai) -> Sinh học (tế bào sơ khai -> sinh giới đa dạng).' },
+  { id: 12, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 12. Theo học thuyết tiến hoá tổng hợp hiện đại thì tiến hóa nhỏ là quá trình', 
+    options: ['A. Hình thành các đơn vị phân loại trên loài.', 'B. Thay đổi tần số allele và kiểu gene của quần thể dẫn đến hình thành loài mới.', 'C. Biến đổi kiểu hình của quần thể gốc.', 'D. Biến đổi thành phần kiểu gene dẫn tới biến đổi kiểu hình mới.'], 
+    correct: 1, back: 'Tiến hóa nhỏ: Thay đổi cấu trúc di truyền của quần thể (tần số alen, kiểu gen) -> Kết quả: Hình thành loài mới.' },
+  { id: 13, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 13. Nguồn nguyên liệu sơ cấp của quá trình tiến hoá là', 
+    options: ['A. Đột biến.', 'B. Nguồn gen du nhập.', 'C. Biến dị tổ hợp.', 'D. Quá trình giao phối.'], 
+    correct: 0, back: 'Đột biến là nguyên liệu SƠ CẤP. Biến dị tổ hợp là nguyên liệu THỨ CẤP.' },
+  { id: 14, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 14. Nhân tố nào sau đây KHÔNG PHẢI là nhân tố tiến hóa?', 
+    options: ['A. Giao phối không ngẫu nhiên.', 'B. Giao phối ngẫu nhiên.', 'C. Phiêu bạt di truyền.', 'D. Chọn lọc tự nhiên.'], 
+    correct: 1, back: 'Giao phối ngẫu nhiên không làm thay đổi tần số alen, nó chỉ duy trì trạng thái cân bằng của quần thể.' },
+  { id: 15, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 15. Đa số đột biến là có hại vì', 
+    options: ['A. Thường làm mất đi khả năng sinh sản.', 'B. Phá vỡ các mối quan hệ hài hoà trong kiểu gen, giữa kiểu gen với môi trường.', 'C. Làm mất đi nhiều gen.', 'D. Biểu hiện ngẫu nhiên, không định hướng.'], 
+    correct: 1, back: 'Kiểu gen của sinh vật đã được CLTN tinh chỉnh trong thời gian dài. Đột biến thường phá vỡ sự hài hòa này.' },
+  { id: 16, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 16. Phiêu bạt di truyền', 
+    options: ['A. Luôn làm tăng vốn gene của quần thể.', 'B. Luôn làm tăng sự đa dạng di truyền.', 'C. Đào thải hết các allele có hại, giữ allele có lợi.', 'D. Làm thay đổi tần số allele không theo một hướng xác định.'], 
+    correct: 3, back: 'Phiêu bạt di truyền là sự biến đổi ngẫu nhiên, có thể loại bỏ alen có lợi hoặc cố định alen có hại.' },
+  { id: 17, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 17. Sự suy giảm số lượng cá thể do đại dịch Covid-19 là ví dụ minh hoạ cho nhân tố tiến hoá nào?', 
+    options: ['A. Chọn lọc tự nhiên.', 'B. Phiêu bạt di truyền.', 'C. Đột biến.', 'D. Dòng gene.'], 
+    correct: 1, back: 'Các thảm họa, dịch bệnh, thiên tai tiêu diệt ngẫu nhiên nhiều cá thể thuộc hiện tượng "Thắt cổ chai quần thể" (Phiêu bạt di truyền).' },
+  { id: 18, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 18. Ví dụ nào sau đây minh hoạ cho dòng gene?', 
+    options: ['A. Lừa lai với ngựa ra con la bất thụ.', 'B. Lấy tinh trùng bò Hà Lan phối cho bò Việt Nam.', 'C. Cánh hoa đậu phủ kín ngăn thụ phấn chéo.', 'D. Chọn cây năng suất cao làm giống.'], 
+    correct: 1, back: 'Dòng gen (Di nhập gen) là sự trao đổi gen giữa các quần thể. Bò Hà Lan mang alen mới vào quần thể bò Việt Nam.' },
+  { id: 19, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 19. Nhân tố đóng vai trò sàng lọc và giữ lại kiểu gen thích nghi là', 
+    options: ['A. Đột biến.', 'B. Chọn lọc tự nhiên.', 'C. Giao phối.', 'D. Cách li.'], 
+    correct: 1, back: 'Chọn lọc tự nhiên là nhân tố quy định chiều hướng và nhịp độ tiến hóa (sàng lọc kiểu hình/kiểu gen).' },
+  { id: 20, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 20. Loài lúa mì (6n = 42) được hình thành bằng cơ chế', 
+    options: ['A. Cách li địa lí.', 'B. Cách li sinh thái.', 'C. Cách li tập tính.', 'D. Lai xa kèm đa bội hoá.'], 
+    correct: 3, back: 'Lai xa (giữa các loài khác nhau) kết hợp đa bội hóa (làm bộ NST tăng lên) tạo ra thể song nhị bội sinh sản hữu tính được.' },
+  { id: 21, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 21. Tiến hóa lớn nghiên cứu về quá trình hình thành', 
+    options: ['A. Loài và trên loài.', 'B. Hình thành loài.', 'C. Dưới loài.', 'D. Hình thành quần thể.'], 
+    correct: 0, back: 'Tiến hóa lớn nghiên cứu sự hình thành các bậc phân loại trên loài (chi, họ, bộ, lớp, ngành...).' },
+  { id: 22, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 22. Mầm mống của những cơ thể sống đầu tiên trên Trái Đất được hình thành ở', 
+    options: ['A. Trên mặt đất.', 'B. Trong đại dương.', 'C. Trong không khí.', 'D. Trong lòng đất.'], 
+    correct: 1, back: 'Sự sống đầu tiên bắt nguồn từ nước (trong các đại dương nguyên thủy).' },
+  { id: 23, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 23. Loài người hiện nay được đặt tên gọi là:', 
+    options: ['A. Homo sapiens (Người thông minh).', 'B. Homo habilis (Người khéo léo).', 'C. Homo erectus (Người đứng thẳng).', 'D. Homo neanderthalensis.'], 
+    correct: 0, back: 'Chúng ta thuộc loài Homo sapiens.' },
+  { id: 24, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 24. Dạng sinh vật xuất hiện sau cùng trong lịch sử sinh giới là:', 
+    options: ['A. Thực vật hạt trần và loài người.', 'B. Thực vật hạt kín và chim, thú.', 'C. Thực vật hạt kín và bộ khỉ.', 'D. Thực vật hạt kín và loài người.'], 
+    correct: 3, back: 'Đại Tân sinh xuất hiện thực vật hạt kín phát triển mạnh và sự phát sinh loài người (kỷ Đệ Tứ).' },
+  { id: 25, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 25. Trong hệ sinh thái rừng ngập mặn, nhân tố nào là vô sinh?', 
+    options: ['A. Cua.', 'B. Tôm.', 'C. Khí CO2.', 'D. Cây đước.'], 
+    correct: 2, back: 'Khí CO2, ánh sáng, nhiệt độ, nước... là nhân tố vô sinh (không sống).' },
+  { id: 26, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 26. Có các loại môi trường phổ biến là:', 
+    options: ['A. Đất, nước, trên cạn, sinh vật.', 'B. Đất, nước, trên cạn, bên trong.', 'C. Đất, nước, trên cạn, ngoài.', 'D. Đất, nước ngọt, nước mặn, trên cạn.'], 
+    correct: 0, back: 'Có 4 môi trường sống chủ yếu: Đất, Nước, Cạn (đất - không khí) và Sinh vật.' },
+  { id: 27, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 27. Nhận định nào KHÔNG CHÍNH XÁC về nhịp sinh học?', 
+    options: ['A. Lá cây trinh nữ cụp lại khi bị va chạm là nhịp sinh học.', 'B. Liên quan đến biến đổi có tính chu kì của môi trường.', 'C. Nhịp sinh học có tính di truyền.', 'D. Gấu ngủ đông là nhịp sinh học.'], 
+    correct: 0, back: 'Lá cây trinh nữ cụp lại khi bị chạm là "Ứng động không sinh trưởng" (cảm ứng cơ học), không phải nhịp sinh học mang tính chu kỳ.' },
+  { id: 28, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 28. Có các loại nhân tố sinh thái nào?', 
+    options: ['A. Vô sinh, hữu sinh, sinh vật.', 'B. Vô sinh, hữu sinh, con người.', 'C. Vô sinh, hữu sinh, ngoại cảnh.', 'D. Nhân tố vô sinh, nhân tố hữu sinh.'], 
+    correct: 3, back: 'Có 2 nhóm nhân tố chính: Vô sinh và Hữu sinh (con người và các sinh vật khác nằm trong nhóm Hữu sinh).' },
+  { id: 29, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 29. Cá chép sống được từ 2°C đến 44°C. Khoảng giá trị này gọi là gì?', 
+    options: ['A. Ổ sinh thái.', 'B. Khoảng thuận lợi.', 'C. Giới hạn sinh thái.', 'D. Vùng cực thuận.'], 
+    correct: 2, back: 'Từ điểm gây chết dưới (2°C) đến điểm gây chết trên (44°C) là Giới hạn sinh thái của loài về nhiệt độ.' },
+  { id: 30, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 30. Da người có thể là môi trường sống của', 
+    options: ['A. Giun đũa kí sinh.', 'B. Chấy, rận, nấm.', 'C. Sâu.', 'D. Thực vật bậc thấp.'], 
+    correct: 1, back: 'Chấy, rận, nấm da sống kí sinh trên bề mặt cơ thể (môi trường sinh vật).' },
+  { id: 31, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 31. Cá chép có môi trường sống là', 
+    options: ['A. Đất.', 'B. Nước.', 'C. Không khí.', 'D. Sinh vật.'], 
+    correct: 1, back: 'Cá chép sống trong môi trường Nước.' },
+  { id: 32, type: 'mcq', category: 'Phần I: Trắc nghiệm', 
+    front: 'Câu 32. Khoảng nhiệt độ từ 20°C đến 35°C (các chức năng sống biểu hiện tốt nhất) của cá rô phi gọi là gì?', 
+    options: ['A. Giới hạn chịu đựng.', 'B. Khoảng thuận lợi.', 'C. Điểm gây chết giới hạn trên.', 'D. Điểm gây chết giới hạn dưới.'], 
+    correct: 1, back: 'Khoảng nhiệt độ mà sinh vật sinh trưởng, phát triển tốt nhất gọi là khoảng thuận lợi.' },
+
+  // ================= PHẦN II: ĐÚNG/SAI =================
+  { id: 33, type: 'tf-group', category: 'Phần II: Đúng/Sai', 
+    front: 'Câu 1. Cho hình ảnh về chi trước của: Người, Báo, Cá voi, Dơi. Nhận định sau ĐÚNG hay SAI?', 
+    options: [
+      { text: 'a) Đây là những cơ quan nằm ở những vị trí tương ứng trên cơ thể của những loài khác nhau.', isTrue: true },
+      { text: 'b) Đây là những cơ quan thể hiện hướng tiến hóa phân li.', isTrue: true },
+      { text: 'c) Đây là những cơ quan tương tự do thực hiện những chức năng khác nhau.', isTrue: false },
+      { text: 'd) Gai xương rồng và tua cuốn của đậu Hà Lan cũng thuộc vào nhóm những cơ quan tương tự.', isTrue: false }
+    ], back: 'Giải thích:\nc) Sai. Đây là cơ quan tương đồng, không phải tương tự.\nd) Sai. Gai xương rồng và tua cuốn đều tiến hóa từ LÁ, nên chúng là cơ quan tương đồng.' },
+  { id: 34, type: 'tf-group', category: 'Phần II: Đúng/Sai', 
+    front: 'Câu 2. Khi nói về bằng chứng tiến hóa, phát biểu sau đây ĐÚNG hay SAI?', 
+    options: [
+      { text: 'a) Những cơ quan thực hiện các chức năng khác nhau, bắt đầu từ một nguồn gốc chung gọi là cơ quan tương đồng.', isTrue: true },
+      { text: 'b) Cơ quan thoái hóa phản ánh tiến hóa đồng quy (tiến hóa hội tụ).', isTrue: false },
+      { text: 'c) Những loài có họ hàng càng gần nhau thì trình tự axit amin càng có xu huớng khác xa nhau.', isTrue: false },
+      { text: 'd) Tất cả các vi khuẩn, động vật, thực vật đều đuợc cấu tạo từ tế bào.', isTrue: true }
+    ], back: 'Giải thích:\nb) Sai. Cơ quan thoái hóa phản ánh nguồn gốc chung (phân li).\nc) Sai. Họ hàng gần thì trình tự axit amin càng GIỐNG NHAU.' },
+  { id: 35, type: 'tf-group', category: 'Phần II: Đúng/Sai', 
+    front: 'Câu 3. Khi nói về thuyết tiến hóa tổng hợp hiện đại, các nhận xét sau ĐÚNG hay SAI?', 
+    options: [
+      { text: 'a) Thuyết tiến hóa tổng hợp được chia thành tiến hóa nhỏ và tiến hóa lớn.', isTrue: true },
+      { text: 'b) Tiến hóa nhỏ là quá trình biến đổi kiểu hình của quần thể đưa đến hình thành loài mới.', isTrue: false },
+      { text: 'c) Kết quả của tiến hóa nhỏ là hình thành các đơn vị phân loại trên loài.', isTrue: false },
+      { text: 'd) Theo quan điểm hiện đại, đơn vị tiến hóa cấp cơ sở là cá thể.', isTrue: false }
+    ], back: 'Giải thích:\nb) Sai. Tiến hóa nhỏ làm biến đổi TẦN SỐ ALEN và KIỂU GEN, không phải chỉ kiểu hình.\nc) Sai. Tiến hóa LỚN mới hình thành các đơn vị trên loài.\nd) Sai. Đơn vị cơ sở là QUẦN THỂ.' },
+  { id: 36, type: 'tf-group', category: 'Phần II: Đúng/Sai', 
+    front: 'Câu 4. Khi nói về đặc điểm thích nghi của sinh vật, các nhận định dưới đây ĐÚNG hay SAI?', 
+    options: [
+      { text: 'a) Áp lực chọn lọc càng lớn thì quá trình hình thành các đặc điểm thích nghi diễn ra càng chậm.', isTrue: false },
+      { text: 'b) Mỗi đặc điếm thích nghi chỉ hợp lý tương đối.', isTrue: true },
+      { text: 'c) Vi khuẩn có khả năng kháng thuốc nhanh vì gene được biểu hiện ngay và sinh sản nhanh.', isTrue: true },
+      { text: 'd) Môi trường không có thuốc trừ sâu DDT, dạng ruồi đột biến kháng DDT sinh trưởng nhanh hơn dạng bình thường.', isTrue: false }
+    ], back: 'Giải thích:\na) Sai. Áp lực càng LỚN thì hình thành thích nghi càng NHANH.\nd) Sai. Trong môi trường không có thuốc, thể đột biến thường sinh trưởng kém hơn (do tiêu tốn năng lượng tổng hợp enzyme kháng thuốc vô ích).' },
+  { id: 37, type: 'tf-group', category: 'Phần II: Đúng/Sai', 
+    front: 'Câu 5. Xét nguyên nhân làm 2 loài cùng khu vực cách li sinh sản, các nhận định sau ĐÚNG hay SAI?', 
+    options: [
+      { text: 'a) Chúng có nơi ở khác nhau nên các cá thể không gặp gỡ nhau được.', isTrue: true },
+      { text: 'b) Nếu giao phối cũng không tạo ra con lai hoặc tạo ra con lai bất thụ.', isTrue: true },
+      { text: 'c) Chúng có mùa sinh sản khác nhau.', isTrue: true },
+      { text: 'd) Con lai tạo ra thường có sức sống kém nên bị đào thải.', isTrue: true }
+    ], back: 'Tất cả các ý trên đều là các cơ chế cách li sinh sản (cách li sinh cảnh, cách li sau hợp tử, cách li thời gian...).' },
+  { id: 38, type: 'tf-group', category: 'Phần II: Đúng/Sai', 
+    front: 'Câu 6. Các phát biểu sau về các nhân tố sinh thái là ĐÚNG hay SAI?', 
+    options: [
+      { text: 'a) Tất cả nhân tố ST nằm trong giới hạn cho phép loài tồn tại làm thành ổ sinh thái của loài.', isTrue: true },
+      { text: 'b) Nhóm vô sinh gồm tất cả các nhân tố vật lý, hóa học và sinh học trong môi trường.', isTrue: false },
+      { text: 'c) Nhóm hữu sinh bao gồm thế giới hữu cơ và mối quan hệ giữa sinh vật với sinh vật.', isTrue: true },
+      { text: 'd) Trong nhóm hữu sinh, nhân tố con người có ảnh hưởng lớn tới nhiều sinh vật.', isTrue: true }
+    ], back: 'Giải thích:\nb) Sai. Nhóm nhân tố vô sinh KHÔNG bao gồm các yếu tố sinh học.' },
+  { id: 39, type: 'tf-group', category: 'Phần II: Đúng/Sai', 
+    front: 'Câu 7. Khi nói về giới hạn sinh thái, các phát biểu sau là ĐÚNG hay SAI?', 
+    options: [
+      { text: 'a) Giới hạn sinh thái là khoảng giá trị của NHIỀU nhân tố sinh thái tác động qua lại.', isTrue: false },
+      { text: 'b) Cơ thể còn non và cơ thể đang biến đổi sinh lý đều có giới hạn sinh thái hẹp.', isTrue: true },
+      { text: 'c) Khoảng chống chịu là khoảng gây ức chế hoạt động sinh lý của sinh vật.', isTrue: true },
+      { text: 'd) Loài sống ở vùng cực có giới hạn sinh thái về nhiệt độ hẹp hơn loài sống ở gần xích đạo.', isTrue: false }
+    ], back: 'Giải thích:\na) Sai. Giới hạn sinh thái là giới hạn chịu đựng đối với MỘT nhân tố sinh thái nhất định.\nd) Sai. Loài ở vùng cực chịu biến thiên nhiệt lớn trong năm (âm sâu đến ấm) nên thường có giới hạn nhiệt rộng hơn loài ở xích đạo (nhiệt độ luôn ổn định).' },
+
+  // ================= PHẦN III: TRẢ LỜI NGẮN =================
+  { id: 50, type: 'input', category: 'Phần III: Trả lời ngắn', 
+    front: 'Câu 1. Có bao nhiêu bằng chứng KHÔNG PHẢI là bằng chứng giải phẫu học so sánh?\n(1) Đa số các loài đều dùng chung mã di truyền.\n(2) Xương chi dưới phân bố tương tự nhau.\n(3) Sự tương đồng về phát triển phôi.\n(4) Đực có di tích tuyến sữa.\n(5) Gai xương rồng và tua cuốn đậu.\n(6) Di tích xương đai hông cá voi.', 
+    correct: '2', back: 'ĐÁP ÁN: 2\nĐó là ý (1) Sinh học phân tử và ý (3) Phôi sinh học. Các ý còn lại là giải phẫu so sánh.' },
+  { id: 51, type: 'input', category: 'Phần III: Trả lời ngắn', 
+    front: 'Câu 2. Có bao nhiêu đặc điểm phù hợp với tác động của phiêu bạt di truyền?\n(1) Làm thay đổi tần số allele và thành phần kiểu gene.\n(2) Thay đổi kiểu gene không theo hướng xác định.\n(3) Làm giàu vốn gene của quần thể.\n(4) Mức độ tác động phụ thuộc vào kích thước quần thể.', 
+    correct: '3', back: 'ĐÁP ÁN: 3\nGồm các ý (1), (2), (4). Ý (3) sai vì phiêu bạt di truyền làm NGHÈO vốn gen của quần thể.' },
+  { id: 52, type: 'input', category: 'Phần III: Trả lời ngắn', 
+    front: 'Câu 3. Có bao nhiêu ví dụ thể hiện đúng cặp cơ quan tương đồng?\n(1) Cánh chim và cánh dơi.\n(2) Tuyến nọc độc của rắn và tuyến nước bọt của người.\n(3) Chi trước của thú và tay người.\n(4) Cánh chim và cánh ong.', 
+    correct: '3', back: 'ĐÁP ÁN: 3\nGồm ý (1), (2), (3). Ý (4) cánh chim (từ chi trước) và cánh ong (từ mặt lưng ngực) là cơ quan TƯƠNG TỰ.' },
+  { id: 53, type: 'input', category: 'Phần III: Trả lời ngắn', 
+    front: 'Câu 4. Loài thực vật A (2n = 12). Loài B (2n = 16). Loài C xuất hiện do dị đa bội con lai giữa loài A và B. Bộ nhiễm sắc thể lưỡng bội của loài C có thể là bao nhiêu?', 
+    correct: '28', back: 'ĐÁP ÁN: 28\nGiải thích: Giao tử của A là n_A=6, giao tử của B là n_B=8. Con lai F1 có bộ NST là n_A + n_B = 14. Sau khi đa bội hóa (gấp đôi lên) thành 2n_A + 2n_B = 28.' },
+  { id: 54, type: 'input', category: 'Phần III: Trả lời ngắn', 
+    front: 'Câu 5. Cho các nhân tố sinh thái: sinh vật ngoại lai, nhiệt độ, ánh sáng, nước, độ pH, nồng độ oxygen, con người. Có bao nhiêu nhân tố vô sinh?', 
+    correct: '5', back: 'ĐÁP ÁN: 5\nGồm: Nhiệt độ, ánh sáng, nước, độ pH, nồng độ oxygen.' },
+  { id: 55, type: 'input', category: 'Phần III: Trả lời ngắn', 
+    front: 'Câu 6. Cho các loài sinh vật: cá chép, giun đất, chim sẻ, nấm da, ếch. Có bao nhiêu loài sống ở một loại môi trường xác định?', 
+    correct: '4', back: 'ĐÁP ÁN: 4\nCá chép (nước); Giun đất (đất); Chim sẻ (cạn); Nấm da (sinh vật). Ếch sống ở 2 môi trường (cả nước và cạn).' },
+  { id: 56, type: 'input', category: 'Phần III: Trả lời ngắn', 
+    front: 'Câu 7. Cho các đặc điểm: sống ở tầng trên tán rừng, lá nhỏ, lá xếp nghiêng, ít khí khổng, lá thường nằm ngang. Có bao nhiêu đặc điểm phù hợp với cây ƯA SÁNG?', 
+    correct: '3', back: 'ĐÁP ÁN: 3\nGồm: Sống ở tầng trên, lá nhỏ, lá xếp nghiêng (tránh nắng gắt). Lá nằm ngang và ít khí khổng không phải đặc điểm chính của nhóm này.' },
+  { id: 57, type: 'input', category: 'Phần III: Trả lời ngắn', 
+    front: 'Câu 8. Cho các đặc điểm: giới hạn sinh thái, tác động tổng hợp, tác động không đồng đều, tác động qua lại, tác động trực tiếp. Có bao nhiêu đặc điểm thể hiện quy luật tác động của nhân tố sinh thái?', 
+    correct: '4', back: 'ĐÁP ÁN: 4\nGồm: Quy luật giới hạn sinh thái, quy luật tác động tổng hợp, quy luật tác động không đồng đều, quy luật tác động qua lại.' },
+];
+
+const categories = ['Tất cả', 'Phần I: Trắc nghiệm', 'Phần II: Đúng/Sai', 'Phần III: Trả lời ngắn'];
+
+export default function App() {
+  const [activeCategory, setActiveCategory] = useState('Tất cả');
+  const [cards, setCards] = useState(flashcardsData);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  // Trạng thái thẻ
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [userAnswer, setUserAnswer] = useState(null);
+  const [isChecked, setIsChecked] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Lọc category
+  useEffect(() => {
+    let filtered = flashcardsData;
+    if (activeCategory !== 'Tất cả') {
+      filtered = flashcardsData.filter(card => card.category === activeCategory);
+    }
+    setCards(filtered);
+    resetCardState();
+    setCurrentIndex(0);
+  }, [activeCategory]);
+
+  const resetCardState = () => {
+    setIsFlipped(false);
+    setIsChecked(false);
+    setUserAnswer(null);
+  };
+
+  const handleFlip = () => {
+    setIsFlipped(!isFlipped);
+  };
+
+  const nextCard = useCallback(() => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    resetCardState();
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % cards.length);
+      setIsTransitioning(false);
+    }, 150);
+  }, [cards.length, isTransitioning]);
+
+  const prevCard = useCallback(() => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    resetCardState();
+    setTimeout(() => {
+      setCurrentIndex((prev) => (prev - 1 + cards.length) % cards.length);
+      setIsTransitioning(false);
+    }, 150);
+  }, [cards.length, isTransitioning]);
+
+  const shuffleCards = () => {
+    setIsTransitioning(true);
+    resetCardState();
+    setTimeout(() => {
+      const shuffled = [...cards].sort(() => Math.random() - 0.5);
+      setCards(shuffled);
+      setCurrentIndex(0);
+      setIsTransitioning(false);
+    }, 200);
+  };
+
+  // Keyboard navigation an toàn hơn
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Nếu đang focus vào input thì bỏ qua để không bị chuyển trang
+      if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'input') return;
+
+      if (e.key === 'ArrowRight') nextCard();
+      if (e.key === 'ArrowLeft') prevCard();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [nextCard, prevCard]);
+
+  const currentCard = cards[currentIndex];
+
+  // Xử lý logic Dò Đáp Án
+  const handleCheckAnswer = (e) => {
+    e.stopPropagation();
+    
+    if (currentCard.type === 'tf-group') {
+      const answers = userAnswer || {};
+      // Kiểm tra xem đã chọn đủ tất cả các ý chưa
+      if (Object.keys(answers).length < currentCard.options.length) {
+        alert("Vui lòng chọn ĐÚNG hoặc SAI cho TẤT CẢ các dòng trước khi kiểm tra!");
+        return;
+      }
+    } else {
+      if (userAnswer === null || userAnswer === '') {
+        alert("Vui lòng chọn hoặc nhập đáp án trước khi kiểm tra!");
+        return;
+      }
+    }
+    
+    setIsChecked(true);
+  };
+
+  // Render nội dung tương tác
+  const renderInteractiveArea = () => {
+    if (!currentCard) return null;
+
+    // --- MCQ ---
+    if (currentCard.type === 'mcq') {
+      return (
+        <div className="flex flex-col gap-2 mt-4 w-full pb-4">
+          {currentCard.options.map((opt, idx) => {
+            let btnClass = "text-left px-4 py-3 rounded-xl border-2 transition-all duration-200 ";
+            
+            if (!isChecked) {
+              btnClass += userAnswer === idx 
+                ? "border-blue-500 bg-blue-50 text-blue-700 font-semibold shadow-md" 
+                : "border-slate-200 hover:border-blue-300 hover:bg-slate-50";
+            } else {
+              if (idx === currentCard.correct) {
+                btnClass += "border-green-500 bg-green-100 text-green-800 font-bold";
+              } else if (userAnswer === idx && idx !== currentCard.correct) {
+                btnClass += "border-red-500 bg-red-100 text-red-800 line-through opacity-80";
+              } else {
+                btnClass += "border-slate-100 bg-slate-50 opacity-50";
+              }
+            }
+
+            return (
+              <button 
+                key={idx}
+                disabled={isChecked}
+                onClick={(e) => { e.stopPropagation(); setUserAnswer(idx); }}
+                className={btnClass}
+              >
+                <div className="flex justify-between items-center">
+                  <span>{opt}</span>
+                  {isChecked && idx === currentCard.correct && <CheckCircle className="text-green-600" size={20} />}
+                  {isChecked && userAnswer === idx && idx !== currentCard.correct && <XCircle className="text-red-600" size={20} />}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // --- TRUE / FALSE GROUP ---
+    if (currentCard.type === 'tf-group') {
+      const tfAnswers = userAnswer || {};
+      
+      const handleTFSelect = (idx, value) => {
+        setUserAnswer({ ...tfAnswers, [idx]: value });
+      };
+
+      return (
+        <div className="flex flex-col gap-3 mt-4 w-full pb-4">
+          {currentCard.options.map((opt, idx) => {
+            const isAnsTrue = tfAnswers[idx] === true;
+            const isAnsFalse = tfAnswers[idx] === false;
+            
+            let statusIcon = null;
+            if (isChecked) {
+              const isCorrect = tfAnswers[idx] === opt.isTrue;
+              statusIcon = isCorrect ? <CheckCircle className="text-green-500" size={20} /> : <XCircle className="text-red-500" size={20} />;
+            }
+
+            return (
+              <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg border border-slate-200 bg-slate-50 gap-3">
+                <span className="text-sm font-medium text-slate-700 flex-1">{opt.text}</span>
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                  <button
+                    disabled={isChecked}
+                    onClick={(e) => { e.stopPropagation(); handleTFSelect(idx, true); }}
+                    className={`px-4 py-1.5 rounded-md text-sm font-bold border ${isAnsTrue ? 'bg-blue-600 text-white border-blue-600 shadow' : 'bg-white text-slate-500 border-slate-300 hover:bg-blue-50'}`}
+                  >ĐÚNG</button>
+                  <button
+                    disabled={isChecked}
+                    onClick={(e) => { e.stopPropagation(); handleTFSelect(idx, false); }}
+                    className={`px-4 py-1.5 rounded-md text-sm font-bold border ${isAnsFalse ? 'bg-orange-500 text-white border-orange-500 shadow' : 'bg-white text-slate-500 border-slate-300 hover:bg-orange-50'}`}
+                  >SAI</button>
+                  {isChecked && <div className="ml-2 w-5">{statusIcon}</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // --- INPUT (TRẢ LỜI NGẮN) ---
+    if (currentCard.type === 'input') {
+      let inputClass = "w-full text-center text-xl font-bold py-3 rounded-xl border-2 outline-none focus:ring-4 transition-all ";
+      let feedback = null;
+
+      if (!isChecked) {
+        inputClass += "border-blue-300 focus:border-blue-500 focus:ring-blue-100 bg-blue-50 text-blue-800";
+      } else {
+        const isCorrect = userAnswer && userAnswer.toString().trim().toLowerCase() === currentCard.correct.toString().toLowerCase();
+        if (isCorrect) {
+          inputClass += "border-green-500 bg-green-100 text-green-800";
+          feedback = <div className="text-green-600 font-bold mt-2 flex items-center justify-center gap-1"><CheckCircle size={18}/> Chính xác!</div>;
+        } else {
+          inputClass += "border-red-500 bg-red-100 text-red-800";
+          feedback = <div className="text-red-600 font-bold mt-2 flex items-center justify-center gap-1"><XCircle size={18}/> Sai. Đáp án đúng: {currentCard.correct}</div>;
+        }
+      }
+
+      return (
+        <div className="w-full max-w-xs mx-auto mt-6 pb-4">
+          <input 
+            type="text" 
+            placeholder="Nhập đáp án..."
+            disabled={isChecked}
+            value={userAnswer || ''}
+            onChange={(e) => setUserAnswer(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if(e.key === 'Enter') handleCheckAnswer(e);
+            }}
+            className={inputClass}
+          />
+          {feedback}
+        </div>
+      );
+    }
+  };
+
+  const flipStyle = {
+    transformStyle: 'preserve-3d',
+    transition: 'transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1)',
+    transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+  };
+
+  const frontBackStyle = {
+    backfaceVisibility: 'hidden',
+    WebkitBackfaceVisibility: 'hidden',
+  };
+
+  const backStyle = {
+    ...frontBackStyle,
+    transform: 'rotateY(180deg)',
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100 text-slate-800 font-sans flex flex-col items-center py-6 px-4">
+      <div className="w-full max-w-3xl mb-6 text-center space-y-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-blue-800 tracking-tight">
+            Sinh Học 12 - Ôn Thi
+          </h1>
+          <p className="text-slate-500 font-medium">Chọn/Nhập đáp án và Dò ngay lập tức!</p>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                activeCategory === cat
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {cards.length > 0 && currentCard && (
+        <div className="w-full max-w-2xl flex flex-col items-center">
+          
+          <div className="w-full flex justify-between items-center mb-3 px-2 text-sm font-medium text-slate-500">
+            <span className="flex items-center gap-1 font-bold">
+              <Layers size={16} className="text-blue-500" /> 
+              Câu {currentIndex + 1} / {cards.length}
+            </span>
+            <button 
+              onClick={shuffleCards}
+              className="flex items-center gap-1 hover:text-blue-600 bg-white px-3 py-1.5 rounded-md shadow-sm border border-slate-200"
+            >
+              <Shuffle size={14} /> Trộn câu hỏi
+            </button>
+          </div>
+
+          {/* Thay vì min-h-[420px], ta dùng chiều cao cứng h-[550px] để container đủ lớn cho nội dung dài và tuyệt đối ổn định */}
+          <div 
+            className="w-full h-[550px] md:h-[600px] perspective-1000 group mb-6"
+            style={{ perspective: '1200px' }}
+          >
+            <div 
+              className={`relative w-full h-full rounded-2xl shadow-xl ring-1 ring-slate-900/5 ${isTransitioning ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}`}
+              style={flipStyle}
+            >
+              {/* === MẶT TRƯỚC === */}
+              <div 
+                className="absolute inset-0 w-full h-full bg-white rounded-2xl p-6 flex flex-col justify-between overflow-y-auto"
+                style={frontBackStyle}
+              >
+                <div>
+                  <div className="w-full flex justify-between mb-4">
+                    <span className="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                      {currentCard.category}
+                    </span>
+                  </div>
+                  
+                  <div className="w-full text-lg md:text-xl font-bold leading-relaxed whitespace-pre-line text-slate-800 text-left">
+                    {currentCard.front}
+                  </div>
+
+                  {renderInteractiveArea()}
+                </div>
+
+                {/* Phần nút đặt cố định ở dưới, nằm trong flow của layout flex-col justify-between */}
+                <div className="w-full mt-4 flex justify-between gap-4 shrink-0">
+                  {!isChecked ? (
+                    <button 
+                      onClick={handleCheckAnswer}
+                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex justify-center items-center gap-2"
+                    >
+                      <MousePointer size={20} /> DÒ ĐÁP ÁN
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={handleFlip}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex justify-center items-center gap-2"
+                    >
+                      <RotateCcw size={20} /> XEM GIẢI THÍCH (LẬT THẺ)
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* === MẶT SAU === */}
+              <div 
+                className="absolute inset-0 w-full h-full bg-slate-800 text-white rounded-2xl p-8 flex flex-col justify-center items-center text-center overflow-y-auto cursor-pointer"
+                style={backStyle}
+                onClick={handleFlip}
+              >
+                <div className="absolute top-4 left-4 text-xs font-bold text-emerald-100 bg-emerald-600/50 px-3 py-1 rounded-full">
+                  Giải thích chi tiết
+                </div>
+                <div className="text-xl md:text-2xl font-bold leading-relaxed whitespace-pre-line text-emerald-300">
+                  {currentCard.back}
+                </div>
+                <div className="absolute bottom-6 text-slate-400 text-sm flex items-center gap-2">
+                  <RotateCcw size={16}/> Chạm để quay lại mặt trước
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center justify-center gap-8">
+            <button
+              onClick={prevCard}
+              className="p-4 rounded-full bg-white text-slate-700 shadow border border-slate-200 hover:bg-blue-50 hover:text-blue-600 transition-all active:scale-95"
+            >
+              <ChevronLeft size={28} />
+            </button>
+
+            <button
+              onClick={nextCard}
+              className="p-4 rounded-full bg-white text-slate-700 shadow border border-slate-200 hover:bg-blue-50 hover:text-blue-600 transition-all active:scale-95"
+            >
+              <ChevronRight size={28} />
+            </button>
+          </div>
+
+        </div>
+      )}
+    </div>
+  );
+}
